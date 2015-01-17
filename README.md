@@ -15,3 +15,6 @@ Danach aktivierst du das Plugin in der Konfigurationsdatei.
         enable:
             - simplecontact
 
+## Demo
+
+<http://getherbie.org/kontakt>
