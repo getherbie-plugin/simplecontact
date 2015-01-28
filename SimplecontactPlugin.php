@@ -35,9 +35,9 @@ class SimplecontactPlugin extends Herbie\Plugin
      */
     public function simplecontact()
     {
-        if ( $_SERVER['REQUEST_METHOD'] == "POST") {
-            if ($this->validateFormData() ) {
-                if ($this->sendEmail() ) {
+        if ($_SERVER['REQUEST_METHOD'] == "POST") {
+            if ($this->validateFormData()) {
+                if ($this->sendEmail()) {
                     $this->redirect('success');
                 } else {
                     $this->redirect('fail');
@@ -47,7 +47,7 @@ class SimplecontactPlugin extends Herbie\Plugin
 
         $config =  $this->getFormConfig();
 
-        switch($this->app['action']) {
+        switch ($this->app['action']) {
             case 'fail':
                 $content = $config['messages']['fail'];
                 break;
@@ -64,7 +64,6 @@ class SimplecontactPlugin extends Herbie\Plugin
         }
 
         return $content;
-
     }
 
     /**
@@ -76,15 +75,15 @@ class SimplecontactPlugin extends Herbie\Plugin
         $form_data = $this->filterFormData();
         extract($form_data); // name, email, message, antispam
 
-        if(empty($name)) {
+        if (empty($name)) {
             $this->errors['name'] = $config['errors']['emptyField'];
         }
-        if(empty($email)) {
+        if (empty($email)) {
             $this->errors['email'] = $config['errors']['emptyField'];
-        } elseif(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $this->errors['email'] = $config['errors']['invalidEmail'];
         }
-        if(empty($message)) {
+        if (empty($message)) {
             $this->errors['message'] = $config['errors']['emptyField'];
         }
 
@@ -120,7 +119,7 @@ class SimplecontactPlugin extends Herbie\Plugin
         $form = $this->filterFormData();
 
         // Antispam
-        if(!empty($form['antispam'])) {
+        if (!empty($form['antispam'])) {
             return true;
         }
 
@@ -144,7 +143,7 @@ class SimplecontactPlugin extends Herbie\Plugin
     protected function getFormConfig()
     {
         $config = (array) $this->config('plugins.config.simplecontact');
-        if(isset($this->app['menuItem']->simplecontact) && is_array($this->app['menuItem']->simplecontact)) {
+        if (isset($this->app['menuItem']->simplecontact) && is_array($this->app['menuItem']->simplecontact)) {
             $config = (array)$this->app['menuItem']->simplecontact;
         }
         return $config;
@@ -159,5 +158,4 @@ class SimplecontactPlugin extends Herbie\Plugin
         $twigExt = $this->app['twig']->environment->getExtension('herbie');
         $twigExt->functionRedirect($route);
     }
-
 }
