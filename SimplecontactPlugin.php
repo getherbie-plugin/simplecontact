@@ -47,7 +47,7 @@ class SimplecontactPlugin extends Herbie\Plugin
 
         $config =  $this->getFormConfig();
 
-        switch ($this->app['action']) {
+        switch ($this->app['request']->getAction()) {
             case 'fail':
                 $content = $config['messages']['fail'];
                 break;
@@ -59,7 +59,7 @@ class SimplecontactPlugin extends Herbie\Plugin
                     'config' => $config,
                     'errors' => $this->errors,
                     'vars' => $this->filterFormData(),
-                    'route' => $this->app['route']
+                    'route' => $this->app['request']->getRoute()
                 ]);
         }
 
@@ -154,7 +154,7 @@ class SimplecontactPlugin extends Herbie\Plugin
      */
     protected function redirect($action)
     {
-        $route = $this->app['route'] . ':' . $action;
+        $route = $this->app['request']->getRoute() . ':' . $action;
         $twigExt = $this->app['twig']->environment->getExtension('herbie');
         $twigExt->functionRedirect($route);
     }
