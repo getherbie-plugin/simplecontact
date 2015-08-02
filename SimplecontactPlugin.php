@@ -46,8 +46,8 @@ class SimplecontactPlugin extends Herbie\Plugin
         }
 
         $config =  $this->getFormConfig();
-
-        switch ($this->app['request']->getAction()) {
+        $request = $this->getService('Request');
+        switch ($request->getAction()) {
             case 'fail':
                 $content = $config['messages']['fail'];
                 break;
@@ -55,11 +55,11 @@ class SimplecontactPlugin extends Herbie\Plugin
                 $content = $config['messages']['success'];
                 break;
             default:
-                $content = $this->app['twig']->render('@plugin/simplecontact/templates/form.twig', [
+                $content = $this->render('@plugin/simplecontact/templates/form.twig', [
                     'config' => $config,
                     'errors' => $this->errors,
                     'vars' => $this->filterFormData(),
-                    'route' => $this->app['request']->getRoute()
+                    'route' => $request->getRoute()
                 ]);
         }
 
@@ -143,8 +143,9 @@ class SimplecontactPlugin extends Herbie\Plugin
     protected function getFormConfig()
     {
         $config = (array) $this->config('plugins.config.simplecontact');
-        if (isset($this->app['menuItem']->simplecontact) && is_array($this->app['menuItem']->simplecontact)) {
-            $config = (array)$this->app['menuItem']->simplecontact;
+        $page = Herbie\Application::getPage();
+        if (isset($page->simplecontact) && is_array($page->simplecontact)) {
+            $config = (array)$page->simplecontact;
         }
         return $config;
     }
@@ -154,8 +155,8 @@ class SimplecontactPlugin extends Herbie\Plugin
      */
     protected function redirect($action)
     {
-        $route = $this->app['request']->getRoute() . ':' . $action;
-        $twigExt = $this->app['twig']->environment->getExtension('herbie');
+        $route = $this->getService('Request')->getRoute() . ':' . $action;
+        $twigExt = $this->getTwig()->environment->getExtension('herbie');
         $twigExt->functionRedirect($route);
     }
 }
