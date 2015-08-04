@@ -143,7 +143,7 @@ class SimplecontactPlugin extends Herbie\Plugin
     protected function getFormConfig()
     {
         $config = (array) $this->config('plugins.config.simplecontact');
-        $page = Herbie\Application::getPage();
+        $page = $this->getService('Page');
         if (isset($page->simplecontact) && is_array($page->simplecontact)) {
             $config = (array)$page->simplecontact;
         }
@@ -156,7 +156,7 @@ class SimplecontactPlugin extends Herbie\Plugin
     protected function redirect($action)
     {
         $route = $this->getService('Request')->getRoute() . ':' . $action;
-        $twigExt = $this->getTwig()->environment->getExtension('herbie');
+        $twigExt = $this->getService('Twig')->environment->getExtension('herbie');
         $twigExt->functionRedirect($route);
     }
 }
