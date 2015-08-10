@@ -101,12 +101,12 @@ class SimplecontactPlugin extends Herbie\Plugin
             'message' => '',
             'antispam' => ''
         ];
-        $definition = array(
+        $definition = [
             'name' => FILTER_SANITIZE_STRING,
             'email' => FILTER_SANITIZE_EMAIL,
             'message' => FILTER_SANITIZE_STRING,
             'antispam' => FILTER_SANITIZE_STRING
-        );
+        ];
         $filtered = (array)filter_input_array(INPUT_POST, $definition);
         return array_merge($defaults, $filtered);
     }
