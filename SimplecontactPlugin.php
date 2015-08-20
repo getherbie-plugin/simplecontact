@@ -21,13 +21,30 @@ class SimplecontactPlugin extends Herbie\Plugin
     protected $errors = [];
 
     /**
-     * @param Herbie\Event $event
+     * @return array
      */
-    public function onTwigInitialized(Herbie\Event $event)
+    public function getSubscribedEvents()
     {
-        $event['twig']->addFunction(
+        $events = [];
+        if ((bool)$this->config('plugins.config.simplecontact.twig', false)) {
+            $events[] = 'onTwigInitialized';
+        }
+        if ((bool)$this->config('plugins.config.simplecontact.shortcode', true)) {
+            $events[] = 'onShortcodeInitialized';
+        }
+        return $events;
+    }
+
+    public function onTwigInitialized($twig)
+    {
+        $twig->addFunction(
             new Twig_SimpleFunction('simplecontact', [$this, 'simplecontact'], ['is_safe' => ['html']])
         );
+    }
+
+    public function onShortcodeInitialized($shortcode)
+    {
+        $shortcode->add('simplecontact', [$this, 'simplecontact']);
     }
 
     /**
