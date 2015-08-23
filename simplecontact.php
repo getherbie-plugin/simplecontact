@@ -1,48 +1,39 @@
 <?php
 
-/**
- * This file is part of Herbie.
- *
- * (c) Thomas Breuss <www.tebe.ch>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
-namespace herbie\plugin\simplecontact;
-
-use Herbie;
-use Herbie\Loader\FrontMatterLoader;
+use Herbie\DI;
+use Herbie\Hook;
 use Herbie\Menu;
-use Twig_SimpleFunction;
 
-class SimplecontactPlugin extends Herbie\Plugin
+class SimplecontactPlugin
 {
+    protected $config;
+
     protected $errors = [];
 
-    /**
-     * @return array
-     */
-    public function getSubscribedEvents()
+    public function __construct()
     {
-        $events = [];
-        if ((bool)$this->config('plugins.config.simplecontact.twig', false)) {
-            $events[] = 'onTwigInitialized';
-        }
-        if ((bool)$this->config('plugins.config.simplecontact.shortcode', true)) {
-            $events[] = 'onShortcodeInitialized';
-        }
-        return $events;
+        $this->config = DI::get('Config');
     }
 
-    public function onTwigInitialized($twig)
+    public function install()
+    {
+        if ((bool)$this->config->get('plugins.config.simplecontact.twig', false)) {
+            $events[] = 'onTwigInitialized';
+            Hook::attach('twigInitialized', [$this, 'addTwigFunction']);
+        }
+        if ((bool)$this->config->get('plugins.config.simplecontact.shortcode', true)) {
+            Hook::attach('shortcodeInitialized', [$this, 'addShortcode']);
+        }
+    }
+
+    public function addTwigFunction($twig)
     {
         $twig->addFunction(
-            new Twig_SimpleFunction('simplecontact', [$this, 'simplecontact'], ['is_safe' => ['html']])
+            new \Twig_SimpleFunction('simplecontact', [$this, 'simplecontact'], ['is_safe' => ['html']])
         );
     }
 
-    public function onShortcodeInitialized($shortcode)
+    public function addShortcode($shortcode)
     {
         $shortcode->add('simplecontact', [$this, 'simplecontact']);
     }
@@ -63,7 +54,7 @@ class SimplecontactPlugin extends Herbie\Plugin
         }
 
         $config =  $this->getFormConfig();
-        $request = $this->getService('Request');
+        $request = DI::get('Request');
         switch ($request->getAction()) {
             case 'fail':
                 $content = $config['messages']['fail'];
@@ -72,7 +63,7 @@ class SimplecontactPlugin extends Herbie\Plugin
                 $content = $config['messages']['success'];
                 break;
             default:
-                $content = $this->render('@plugin/simplecontact/templates/form.twig', [
+                $content = DI::get('Twig')->render('@plugin/simplecontact/templates/form.twig', [
                     'config' => $config,
                     'errors' => $this->errors,
                     'vars' => $this->filterFormData(),
@@ -159,8 +150,8 @@ class SimplecontactPlugin extends Herbie\Plugin
      */
     protected function getFormConfig()
     {
-        $config = (array) $this->config('plugins.config.simplecontact');
-        $page = $this->getService('Page');
+        $config = (array) $this->config->get('plugins.config.simplecontact');
+        $page = DI::get('Page');
         if (isset($page->simplecontact) && is_array($page->simplecontact)) {
             $config = (array)$page->simplecontact;
         }
@@ -172,8 +163,10 @@ class SimplecontactPlugin extends Herbie\Plugin
      */
     protected function redirect($action)
     {
-        $route = $this->getService('Request')->getRoute() . ':' . $action;
-        $twigExt = $this->getService('Twig')->environment->getExtension('herbie');
+        $route = DI::get('Request')->getRoute() . ':' . $action;
+        $twigExt = DI::get('Twig')->getEnvironment()->getExtension('herbie');
         $twigExt->functionRedirect($route);
     }
 }
+
+(new SimplecontactPlugin())->install();
