@@ -142,7 +142,7 @@ sieht also wie folgt aus:
 
     Bitte fülle alle Felder des Kontaktformulars aus:
     
-    [[simplecontact]]
+    [simplecontact]
 
     Du kannst uns auch via E-Mail oder Telefon erreichen.    
     
