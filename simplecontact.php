@@ -62,7 +62,11 @@ class SimplecontactPlugin
                 $content = $config['messages']['success'];
                 break;
             default:
-                $content = DI::get('Twig')->render('@plugin/simplecontact/templates/form.twig', [
+                $template = $this->config->get(
+                    'plugins.config.simplecontact.template',
+                    '@plugin/simplecontact/templates/form.twig'
+                );
+                $content = DI::get('Twig')->render($template, [
                     'config' => $config,
                     'errors' => $this->errors,
                     'vars' => $this->filterFormData(),
