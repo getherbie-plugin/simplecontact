@@ -39,7 +39,7 @@ die Übersetzungen der Formularfelder, Fehler- und Erfolgsmeldungen und die Mail
 
 Folgende Formular-Konfigurationen musst du also noch vornehmen: 
 
-    subject: "Anfrage Kontaktformular"
+    subject: "Kontaktformular"
     recipient: "me@example.com"
     fields:
       name:
@@ -57,9 +57,9 @@ Folgende Formular-Konfigurationen musst du also noch vornehmen:
       submit:
         label: "Formular absenden"
     messages:
-      success: "Danke! Deine Nachricht wurde versendet."
-      error: "Fehler: Bitte vervollständige das Formular und probier's nochmal."
-      fail: "Fehler: Die Nachricht konnte nicht übermittelt werden."
+      success: "Deine Nachricht wurde versendet."
+      error: "Bitte alle Felder ausfüllen."
+      fail: "Das Nachricht konnte nicht übermittelt werden."
     errors:
       empty_field: "Dies ist ein Pflichtfeld"
       invalid_email: "Die eingegebene E-Mail ist ungültig"
@@ -90,6 +90,62 @@ In der Site-Konfiguration entsprechend wie folgt:
                 fields:
                 ...   
 
+
+## Anwendung
+
+Falls du den Seitencache aktiviert hast, musst du das `nocache`-Flag setzen. Die Seite würde sonst aus dem Seitencache
+geladen werden.
+
+    ---
+    title: Kontakt
+    nocache: 1
+    ---
+
+Das Formular renderst du dann über den gleichnamigen Shortcode:
+
+    [simplecontact]
+    
+Vor oder nach dem Funktionsaufruf kannst du weiteren Inhalt platzieren. Eine komplette Kontaktseite für deine Website 
+sieht also wie folgt aus:
+
+    ---
+    title: Kontakt
+    nocache: 1
+    simplecontact:
+        subject: "Kontaktformular"
+        recipient: "me@example.com"
+        fields:
+          name:
+            label: "Dein Name"
+            placeholder:
+          email:
+            label: "Deine E-Mail"
+            placeholder:
+          message:
+            label: "Deine Nachricht"
+            placeholder:
+          antispam:
+            label: "Antispam"
+            placeholder:
+          submit:
+            label: "Formular absenden"
+        messages:
+          success: "Deine Nachricht wurde versendet."
+          error: "Bitte alle Felder ausfüllen."
+          fail: "Das Nachricht konnte nicht übermittelt werden."
+        errors:
+          empty_field: "Dies ist ein Pflichtfeld"
+          invalid_email: "Die eingegebene E-Mail ist ungültig"
+    ---
+
+    # Kontakt
+
+    Bitte fülle alle Felder des Kontaktformulars aus:
+    
+    [[simplecontact]]
+
+    Alternativ kannst du uns auch via E-Mail oder telefonisch erreichen.    
+    
 
 ## Demo
 
