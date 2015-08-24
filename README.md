@@ -144,7 +144,7 @@ sieht also wie folgt aus:
     
     [[simplecontact]]
 
-    Alternativ kannst du uns auch via E-Mail oder telefonisch erreichen.    
+    Du kannst uns auch via E-Mail oder Telefon erreichen.    
     
 
 ## Demo
