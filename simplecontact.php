@@ -18,7 +18,6 @@ class SimplecontactPlugin
     public function install()
     {
         if ((bool)$this->config->get('plugins.config.simplecontact.twig', false)) {
-            $events[] = 'onTwigInitialized';
             Hook::attach('twigInitialized', [$this, 'addTwigFunction']);
         }
         if ((bool)$this->config->get('plugins.config.simplecontact.shortcode', true)) {
