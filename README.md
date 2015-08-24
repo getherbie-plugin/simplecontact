@@ -61,8 +61,8 @@ Folgende Formular-Konfigurationen musst du also noch vornehmen:
       error: "Fehler: Bitte vervollständige das Formular und probier's nochmal."
       fail: "Fehler: Die Nachricht konnte nicht übermittelt werden."
     errors:
-      emptyField: "Dies ist ein Pflichtfeld"
-      invalidEmail: "Die eingegebene E-Mail ist ungültig"
+      empty_field: "Dies ist ein Pflichtfeld"
+      invalid_email: "Die eingegebene E-Mail ist ungültig"
 
 
 Du kannst die Konfiguration für das Kontaktformular entweder in den Seiteneigenschaften selber oder in der
@@ -80,7 +80,7 @@ In den Seiteneigenschaften sieht die Konfiguration in reduzierter Form wie folgt
         ...        
     ---
 
-In der Site-Konfiguration entsprechen wie folgt:
+In der Site-Konfiguration entsprechend wie folgt:
 
     plugins:
         config:

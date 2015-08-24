@@ -87,15 +87,15 @@ class SimplecontactPlugin
         extract($form_data); // name, email, message, antispam
 
         if (empty($name)) {
-            $this->errors['name'] = $config['errors']['emptyField'];
+            $this->errors['name'] = $config['errors']['empty_field'];
         }
         if (empty($email)) {
-            $this->errors['email'] = $config['errors']['emptyField'];
+            $this->errors['email'] = $config['errors']['empty_field'];
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $this->errors['email'] = $config['errors']['invalidEmail'];
+            $this->errors['email'] = $config['errors']['invalid_email'];
         }
         if (empty($message)) {
-            $this->errors['message'] = $config['errors']['emptyField'];
+            $this->errors['message'] = $config['errors']['empty_field'];
         }
 
         return empty($this->errors);
