@@ -1,6 +1,6 @@
 {
     "name": "getherbie/plugin-simplecontact",
-    "homepage": "http://www.getherbie.org",
+    "homepage": "https://www.getherbie.org",
     "description": "SimpleContact Plugin for Herbie.",
     "keywords": ["herbie", "plugin", "contact", "mailform"],
     "type": "herbie-plugin",
