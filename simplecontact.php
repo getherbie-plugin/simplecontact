@@ -167,7 +167,9 @@ class SimplecontactPlugin
     protected function redirect($action)
     {
         $route = DI::get('Request')->getRoute() . ':' . $action;
-        $twigExt = DI::get('Twig')->getEnvironment()->getExtension('herbie');
+        $twigExt = DI::get('Twig')
+            ->getEnvironment()
+            ->getExtension('herbie\\plugin\\twig\\classes\\HerbieExtension');
         $twigExt->functionRedirect($route);
     }
 }
