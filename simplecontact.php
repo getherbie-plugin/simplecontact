@@ -4,33 +4,44 @@ namespace herbie\plugin\simplecontact;
 
 use herbie\plugin\shortcode\classes\Shortcode;
 use herbie\plugin\twig\classes\HerbieExtension;
+use herbie\plugin\twig\classes\Twig;
 use Zend\EventManager\EventInterface;
 use Zend\EventManager\EventManagerInterface;
 
 class SimplecontactPlugin extends \Herbie\Plugin
 {
-    protected $config;
-
     protected $errors = [];
 
+    /**
+     * @param EventManagerInterface $events
+     * @param int $priority
+     */
     public function attach(EventManagerInterface $events, $priority = 1)
     {
-        $this->config = $this->herbie->getConfig();
-        if ((bool)$this->config->get('plugins.config.simplecontact.twig', false)) {
-            $events->attach('twigInitialized', [$this, 'addTwigFunction'], $priority);
+        $config = $this->herbie->getConfig();
+        if ((bool)$config->get('plugins.config.simplecontact.twig', false)) {
+            $events->attach('twigInitialized', [$this, 'onTwigInitialized'], $priority);
         }
-        if ((bool)$this->config->get('plugins.config.simplecontact.shortcode', true)) {
+        if ((bool)$config->get('plugins.config.simplecontact.shortcode', true)) {
             $events->attach('shortcodeInitialized', [$this, 'onShortcodeInitialized'], $priority);
         }
     }
 
-    public function addTwigFunction($twig)
+    /**
+     * @param EventInterface $event
+     */
+    public function onTwigInitialized(EventInterface $event)
     {
+        /** @var Twig $twig */
+        $twig = $event->getTarget();
         $twig->addFunction(
             new \Twig_SimpleFunction('simplecontact', [$this, 'simplecontact'], ['is_safe' => ['html']])
         );
     }
 
+    /**
+     * @param EventInterface $event
+     */
     public function onShortcodeInitialized(EventInterface $event)
     {
         /** @var Shortcode $shortcode */
@@ -63,7 +74,7 @@ class SimplecontactPlugin extends \Herbie\Plugin
                 $content = $config['messages']['success'];
                 break;
             default:
-                $template = $this->config->get(
+                $template = $this->herbie->getConfig()->get(
                     'plugins.config.simplecontact.template',
                     '@plugin/simplecontact/templates/form.twig'
                 );
@@ -154,7 +165,7 @@ class SimplecontactPlugin extends \Herbie\Plugin
      */
     protected function getFormConfig()
     {
-        $config = (array) $this->config->get('plugins.config.simplecontact');
+        $config = (array) $this->herbie->getConfig()->get('plugins.config.simplecontact.formconfig');
         $page = $this->herbie->getPage();
         if (isset($page->simplecontact) && is_array($page->simplecontact)) {
             $config = (array)$page->simplecontact;
