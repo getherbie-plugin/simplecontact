@@ -20,10 +20,10 @@ class SimplecontactPlugin extends \Herbie\Plugin
     {
         $config = $this->herbie->getConfig();
         if ((bool)$config->get('plugins.config.simplecontact.twig', false)) {
-            $events->attach('twigInitialized', [$this, 'onTwigInitialized'], $priority);
+            $events->attach('onTwigInitialized', [$this, 'onTwigInitialized'], $priority);
         }
         if ((bool)$config->get('plugins.config.simplecontact.shortcode', true)) {
-            $events->attach('shortcodeInitialized', [$this, 'onShortcodeInitialized'], $priority);
+            $events->attach('onShortcodeInitialized', [$this, 'onShortcodeInitialized'], $priority);
         }
     }
 
