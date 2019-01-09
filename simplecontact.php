@@ -4,6 +4,8 @@ namespace herbie\plugin\simplecontact;
 
 use Herbie\Config;
 use Herbie\Environment;
+use Herbie\Event;
+use Herbie\EventManager;
 use Herbie\Page;
 use Herbie\PluginInterface;
 use Herbie\TwigRenderer;
@@ -13,8 +15,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Tebe\HttpFactory\HttpFactory;
-use Zend\EventManager\EventInterface;
-use Zend\EventManager\EventManagerInterface;
 
 class SimplecontactPlugin implements PluginInterface, MiddlewareInterface
 {
@@ -57,10 +57,10 @@ class SimplecontactPlugin implements PluginInterface, MiddlewareInterface
     }
 
     /**
-     * @param EventManagerInterface $events
+     * @param EventManager $events
      * @param int $priority
      */
-    public function attach(EventManagerInterface $events, $priority = 1): void
+    public function attach(EventManager $events, int $priority = 1): void
     {
         $this->events = $events;
         if ((bool)$this->config->get('plugins.config.simplecontact.twig', false)) {
@@ -72,9 +72,9 @@ class SimplecontactPlugin implements PluginInterface, MiddlewareInterface
     }
 
     /**
-     * @param EventInterface $event
+     * @param Event $event
      */
-    public function onTwigInitialized(EventInterface $event)
+    public function onTwigInitialized(Event $event)
     {
         /** @var Twig $twig */
         $twig = $event->getTarget();
@@ -84,9 +84,9 @@ class SimplecontactPlugin implements PluginInterface, MiddlewareInterface
     }
 
     /**
-     * @param EventInterface $event
+     * @param Event $event
      */
-    public function onShortcodeInitialized(EventInterface $event)
+    public function onShortcodeInitialized(Event $event)
     {
         /** @var Shortcode $shortcode */
         $shortcode = $event->getTarget();
@@ -95,6 +95,9 @@ class SimplecontactPlugin implements PluginInterface, MiddlewareInterface
 
     /**
      * @return string
+     * @throws \Twig_Error_Loader
+     * @throws \Twig_Error_Runtime
+     * @throws \Twig_Error_Syntax
      */
     public function simplecontact()
     {
