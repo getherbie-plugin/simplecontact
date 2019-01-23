@@ -6,9 +6,9 @@ use Herbie\Config;
 use Herbie\Environment;
 use Herbie\Event;
 use Herbie\EventManager;
-use Herbie\Page;
+use Herbie\Middleware\PageResolverMiddleware;
 use Herbie\PluginInterface;
-use Herbie\TwigRenderer;
+use Herbie\Twig\TwigRenderer;
 use Herbie\Url\UrlGenerator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -63,12 +63,7 @@ class SimplecontactPlugin implements PluginInterface, MiddlewareInterface
     public function attach(EventManager $events, int $priority = 1): void
     {
         $this->events = $events;
-        if ((bool)$this->config->get('plugins.config.simplecontact.twig', false)) {
-            $events->attach('onTwigInitialized', [$this, 'onTwigInitialized'], $priority);
-        }
-        if ((bool)$this->config->get('plugins.config.simplecontact.shortcode', true)) {
-            $events->attach('onShortcodeInitialized', [$this, 'onShortcodeInitialized'], $priority);
-        }
+        $events->attach('onTwigInitialized', [$this, 'onTwigInitialized'], $priority);
     }
 
     /**
@@ -81,16 +76,6 @@ class SimplecontactPlugin implements PluginInterface, MiddlewareInterface
         $twig->addFunction(
             new \Twig_SimpleFunction('simplecontact', [$this, 'simplecontact'], ['is_safe' => ['html']])
         );
-    }
-
-    /**
-     * @param Event $event
-     */
-    public function onShortcodeInitialized(Event $event)
-    {
-        /** @var Shortcode $shortcode */
-        $shortcode = $event->getTarget();
-        $shortcode->add('simplecontact', [$this, 'simplecontact']);
     }
 
     /**
@@ -212,8 +197,8 @@ class SimplecontactPlugin implements PluginInterface, MiddlewareInterface
      */
     private function getFormConfig()
     {
-        $config = (array) $this->config->get('plugins.config.simplecontact.formconfig');
-        $page = $this->request->getAttribute(Page::class);
+        $config = (array) $this->config->get('plugins.config.simplecontact.formConfig');
+        $page = $this->request->getAttribute(PageResolverMiddleware::REQUEST_ATTRIBUTE_PAGE);
         if (isset($page->simplecontact) && is_array($page->simplecontact)) {
             $config = (array)$page->simplecontact;
         }

@@ -72,7 +72,7 @@ In den Seiteneigenschaften sieht die Konfiguration in reduzierter Form wie folgt
 
     ---
     title: Kontakt
-    nocache: 1
+    cached: 0
     simplecontact:
         subject: "Kontaktanfrage"
         recipient: "me@example.com"
@@ -93,12 +93,12 @@ In der Site-Konfiguration entsprechend wie folgt:
 
 ## Anwendung
 
-Falls du den Seitencache aktiviert hast, musst du das `nocache`-Flag setzen. Die Seite würde sonst aus dem Seitencache
+Falls du den Seitencache aktiviert hast, musst du `cached` auf `0` setzen. Die Seite würde sonst aus dem Seitencache
 geladen werden.
 
     ---
     title: Kontakt
-    nocache: 1
+    cached: 0
     ---
 
 Das Formular renderst du dann über den gleichnamigen Shortcode:
@@ -110,7 +110,7 @@ sieht also wie folgt aus:
 
     ---
     title: Kontakt
-    nocache: 1
+    cached: 0
     simplecontact:
         subject: "Kontaktformular"
         recipient: "me@example.com"
