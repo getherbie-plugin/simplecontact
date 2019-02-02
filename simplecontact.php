@@ -2,14 +2,13 @@
 
 namespace herbie\plugin\simplecontact;
 
-use Herbie\Config;
+use Herbie\Configuration;
 use Herbie\Environment;
 use Herbie\Event;
 use Herbie\EventManager;
-use Herbie\Middleware\PageResolverMiddleware;
 use Herbie\PluginInterface;
-use Herbie\Twig\TwigRenderer;
-use Herbie\Url\UrlGenerator;
+use Herbie\TwigRenderer;
+use Herbie\UrlGenerator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -19,20 +18,24 @@ use Tebe\HttpFactory\HttpFactory;
 class SimplecontactPlugin implements PluginInterface, MiddlewareInterface
 {
     private $config;
+    private $environment;
     private $errors = [];
     private $events;
+    private $httpFactory;
     private $request;
+    private $twigRenderer;
+    private $urlGenerator;
 
     /**
      * SimplecontactPlugin constructor.
-     * @param Config $config
+     * @param Configuration $config
      * @param Environment $environment
      * @param HttpFactory $httpFactory
      * @param TwigRenderer $twigRenderer
      * @param UrlGenerator $urlGenerator
      */
     public function __construct(
-        Config $config,
+        Configuration $config,
         Environment $environment,
         HttpFactory $httpFactory,
         TwigRenderer $twigRenderer,
@@ -198,7 +201,7 @@ class SimplecontactPlugin implements PluginInterface, MiddlewareInterface
     private function getFormConfig()
     {
         $config = (array) $this->config->get('plugins.config.simplecontact.formConfig');
-        $page = $this->request->getAttribute(PageResolverMiddleware::REQUEST_ATTRIBUTE_PAGE);
+        $page = $this->request->getAttribute(HERBIE_REQUEST_ATTRIBUTE_PAGE);
         if (isset($page->simplecontact) && is_array($page->simplecontact)) {
             $config = (array)$page->simplecontact;
         }
