@@ -5,8 +5,7 @@ namespace herbie\plugin\simplecontact;
 use Herbie\Configuration;
 use Herbie\Environment;
 use Herbie\Event;
-use Herbie\EventManager;
-use Herbie\PluginInterface;
+use Herbie\Plugin;
 use Herbie\TwigRenderer;
 use Herbie\UrlGenerator;
 use Psr\Http\Message\ResponseInterface;
@@ -15,12 +14,11 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Tebe\HttpFactory\HttpFactory;
 
-class SimplecontactPlugin implements PluginInterface, MiddlewareInterface
+class SimplecontactPlugin extends Plugin implements MiddlewareInterface
 {
     private $config;
     private $environment;
     private $errors = [];
-    private $events;
     private $httpFactory;
     private $request;
     private $twigRenderer;
@@ -59,14 +57,11 @@ class SimplecontactPlugin implements PluginInterface, MiddlewareInterface
         return $handler->handle($request);
     }
 
-    /**
-     * @param EventManager $events
-     * @param int $priority
-     */
-    public function attach(EventManager $events, int $priority = 1): void
+    public function getEvents(): array
     {
-        $this->events = $events;
-        $events->attach('onTwigInitialized', [$this, 'onTwigInitialized'], $priority);
+        return [
+            ['onTwigInitialized', [$this, 'onTwigInitialized']]
+        ];
     }
 
     /**
