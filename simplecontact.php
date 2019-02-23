@@ -1,13 +1,13 @@
 <?php
 
-namespace herbie\plugin\simplecontact;
+namespace herbie\plugins\simplecontact;
 
-use Herbie\Configuration;
-use Herbie\Environment;
-use Herbie\Event;
-use Herbie\Plugin;
-use Herbie\TwigRenderer;
-use Herbie\UrlGenerator;
+use herbie\Configuration;
+use herbie\Environment;
+use herbie\Event;
+use herbie\Plugin;
+use herbie\TwigRenderer;
+use herbie\UrlGenerator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
