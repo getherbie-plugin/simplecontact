@@ -57,7 +57,7 @@ class SimplecontactPlugin extends Plugin implements MiddlewareInterface
         return $handler->handle($request);
     }
 
-    public function getEvents(): array
+    public function events(): array
     {
         return [
             ['onTwigInitialized', [$this, 'onTwigInitialized']]
@@ -72,7 +72,7 @@ class SimplecontactPlugin extends Plugin implements MiddlewareInterface
         /** @var Twig $twig */
         $twig = $event->getTarget();
         $twig->addFunction(
-            new \Twig_SimpleFunction('simplecontact', [$this, 'simplecontact'], ['is_safe' => ['html']])
+            new \TwigFunction('simplecontact', [$this, 'simplecontact'], ['is_safe' => ['html']])
         );
     }
 
