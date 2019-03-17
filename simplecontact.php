@@ -13,6 +13,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Tebe\HttpFactory\HttpFactory;
+use Twig\TwigFunction;
 
 class SimplecontactPlugin extends Plugin implements MiddlewareInterface
 {
@@ -72,15 +73,15 @@ class SimplecontactPlugin extends Plugin implements MiddlewareInterface
         /** @var Twig $twig */
         $twig = $event->getTarget();
         $twig->addFunction(
-            new \TwigFunction('simplecontact', [$this, 'simplecontact'], ['is_safe' => ['html']])
+            new TwigFunction('simplecontact', [$this, 'simplecontact'], ['is_safe' => ['html']])
         );
     }
 
     /**
      * @return string
-     * @throws \Twig_Error_Loader
-     * @throws \Twig_Error_Runtime
-     * @throws \Twig_Error_Syntax
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
      */
     public function simplecontact()
     {
@@ -205,6 +206,7 @@ class SimplecontactPlugin extends Plugin implements MiddlewareInterface
 
     /**
      * @param string $action
+     * @throws \InvalidArgumentException
      */
     private function redirect($action)
     {
