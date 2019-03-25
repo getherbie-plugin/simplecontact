@@ -2,7 +2,7 @@
 
 namespace herbie\plugins\simplecontact;
 
-use herbie\Configuration;
+use herbie\Config;
 use herbie\Environment;
 use herbie\Event;
 use herbie\Plugin;
@@ -13,7 +13,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Tebe\HttpFactory\HttpFactory;
-use Twig\TwigFunction;
 
 class SimplecontactPlugin extends Plugin implements MiddlewareInterface
 {
@@ -27,14 +26,14 @@ class SimplecontactPlugin extends Plugin implements MiddlewareInterface
 
     /**
      * SimplecontactPlugin constructor.
-     * @param Configuration $config
+     * @param Config $config
      * @param Environment $environment
      * @param HttpFactory $httpFactory
      * @param TwigRenderer $twigRenderer
      * @param UrlGenerator $urlGenerator
      */
     public function __construct(
-        Configuration $config,
+        Config $config,
         Environment $environment,
         HttpFactory $httpFactory,
         TwigRenderer $twigRenderer,
@@ -73,15 +72,12 @@ class SimplecontactPlugin extends Plugin implements MiddlewareInterface
         /** @var Twig $twig */
         $twig = $event->getTarget();
         $twig->addFunction(
-            new TwigFunction('simplecontact', [$this, 'simplecontact'], ['is_safe' => ['html']])
+            new \Twig\TwigFunction('simplecontact', [$this, 'simplecontact'], ['is_safe' => ['html']])
         );
     }
 
     /**
      * @return string
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\RuntimeError
-     * @throws \Twig\Error\SyntaxError
      */
     public function simplecontact()
     {
@@ -206,7 +202,6 @@ class SimplecontactPlugin extends Plugin implements MiddlewareInterface
 
     /**
      * @param string $action
-     * @throws \InvalidArgumentException
      */
     private function redirect($action)
     {
