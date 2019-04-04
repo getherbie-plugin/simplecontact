@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'apiVersion' => 2,
+    'pluginName' => 'simplecontact',
+    'pluginPath' => __DIR__,
     'template' => '@plugin/simplecontact/templates/form.twig',
     'formConfig' => [
         'subject' => 'Kontaktanfrage',
