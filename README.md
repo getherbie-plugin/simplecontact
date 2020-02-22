@@ -149,4 +149,4 @@ sieht also wie folgt aus:
 
 ## Demo
 
-<https://www.getherbie.org/kontakt>
+<https://herbie.tebe.ch/kontakt>
