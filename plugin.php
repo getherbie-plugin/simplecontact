@@ -2,76 +2,45 @@
 
 use herbie\Config;
 use herbie\Environment;
-use herbie\Event;
 use herbie\Plugin;
 use herbie\TwigRenderer;
 use herbie\UrlGenerator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use Tebe\HttpFactory\HttpFactory;
+use Twig\TwigFunction;
 
-class SimplecontactPlugin extends Plugin implements MiddlewareInterface
+class SimplecontactPlugin extends Plugin
 {
-    private $config;
-    private $environment;
-    private $errors = [];
-    private $httpFactory;
-    private $request;
-    private $twigRenderer;
-    private $urlGenerator;
+    private Config $config;
+    private Environment $environment;
+    private array $errors = [];
+    private HttpFactory $httpFactory;
+    private ServerRequestInterface $request;
+    private TwigRenderer $twigRenderer;
+    private UrlGenerator $urlGenerator;
 
-    /**
-     * SimplecontactPlugin constructor.
-     * @param Config $config
-     * @param Environment $environment
-     * @param HttpFactory $httpFactory
-     * @param TwigRenderer $twigRenderer
-     * @param UrlGenerator $urlGenerator
-     */
     public function __construct(
         Config $config,
         Environment $environment,
         HttpFactory $httpFactory,
+        ServerRequestInterface $request,
         TwigRenderer $twigRenderer,
         UrlGenerator $urlGenerator
     ) {
         $this->config = $config;
         $this->environment = $environment;
         $this->httpFactory = $httpFactory;
+        $this->request = $request;
         $this->twigRenderer = $twigRenderer;
         $this->urlGenerator = $urlGenerator;
     }
-    
-    /**
-     * @param ServerRequestInterface $request
-     * @param RequestHandlerInterface $handler
-     * @return ResponseInterface
-     */
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
-    {
-        $this->request = $request;
-        return $handler->handle($request);
-    }
 
-    public function events(): array
+    public function twigFunctions(): array
     {
         return [
-            ['onTwigInitialized', [$this, 'onTwigInitialized']]
+            new TwigFunction('simplecontact', [$this, 'simplecontact'], ['is_safe' => ['html']])
         ];
-    }
-
-    /**
-     * @param Event $event
-     */
-    public function onTwigInitialized(Event $event)
-    {
-        /** @var Twig $twig */
-        $twig = $event->getTarget();
-        $twig->addFunction(
-            new \Twig\TwigFunction('simplecontact', [$this, 'simplecontact'], ['is_safe' => ['html']])
-        );
     }
 
     /**
@@ -99,10 +68,9 @@ class SimplecontactPlugin extends Plugin implements MiddlewareInterface
                 $content = $config['messages']['success'];
                 break;
             default:
-                $name = $this->config->get(
-                    'plugins.config.simplecontact.template',
-                    '@plugin/simplecontact/templates/form.twig'
-                );
+                $name = $this->config->get('plugins.simplesearch.template', function () {
+                    return $this->getComposerOrLocalTemplatesPath('form.twig');
+                });
                 $content = $this->twigRenderer->renderTemplate($name, [
                     'config' => $config,
                     'errors' => $this->errors,
@@ -182,7 +150,7 @@ class SimplecontactPlugin extends Plugin implements MiddlewareInterface
 
         $headers = "From: {$form['name']} <{$form['email']}>";
 
-        return mail($recipient, $subject, $message, $headers);
+        return mail($recipient, $subject, $message, $headers); // TODO replace with an smtp mailer
     }
 
     /**
@@ -190,7 +158,7 @@ class SimplecontactPlugin extends Plugin implements MiddlewareInterface
      */
     private function getFormConfig()
     {
-        $config = (array) $this->config->get('plugins.config.simplecontact.formConfig');
+        $config = (array) $this->config->get('plugins.simplecontact.formConfig');
         $page = $this->request->getAttribute(HERBIE_REQUEST_ATTRIBUTE_PAGE);
         if (isset($page->simplecontact) && is_array($page->simplecontact)) {
             $config = (array)$page->simplecontact;
@@ -225,4 +193,12 @@ class SimplecontactPlugin extends Plugin implements MiddlewareInterface
         echo $response->getBody();
     }
 
+    private function getComposerOrLocalTemplatesPath(string $name): string
+    {
+        $composerPath = '@vendor/getherbie/plugin-simplecontact/templates/' . $name;
+        $localPath = '@plugin/plugin-simplecontact/templates/' . $name;
+        return $this->twigRenderer->getTwigEnvironment()->getLoader()->exists($composerPath)
+            ? $composerPath
+            : $localPath;
+    }
 }
