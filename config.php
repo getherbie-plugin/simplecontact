@@ -3,8 +3,9 @@
 return [
     'apiVersion' => 2,
     'pluginName' => 'simplecontact',
+    'pluginClass' => __DIR__ . '/plugin.php',
     'pluginPath' => __DIR__,
-    'template' => '@plugin/simplecontact/templates/form.twig',
+    'template' => null,
     'formConfig' => [
         'subject' => 'Kontaktanfrage',
         'recipient' => 'me@example.com',
@@ -38,8 +39,5 @@ return [
             'empty_field' => 'Dies ist ein Pflichtfeld',
             'invalid_email' => 'Die eingegebene E-Mail ist ungültig'
         ]
-    ],
-    'usePageCache' => false,
-    'intValue' => 23,
-    'floatValue' => 0.23,
+    ]
 ];
