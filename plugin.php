@@ -2,6 +2,7 @@
 
 use herbie\Config;
 use herbie\Environment;
+use herbie\PageResolverMiddleware;
 use herbie\Plugin;
 use herbie\TwigRenderer;
 use herbie\UrlGenerator;
@@ -159,7 +160,7 @@ class SimplecontactPlugin extends Plugin
     private function getFormConfig()
     {
         $config = (array) $this->config->get('plugins.simplecontact.formConfig');
-        $page = $this->request->getAttribute(HERBIE_REQUEST_ATTRIBUTE_PAGE);
+        $page = $this->request->getAttribute(PageResolverMiddleware::HERBIE_REQUEST_ATTRIBUTE_PAGE);
         if (isset($page->simplecontact) && is_array($page->simplecontact)) {
             $config = (array)$page->simplecontact;
         }
