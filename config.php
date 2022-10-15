@@ -1,9 +1,11 @@
 <?php
 
+require_once 'plugin.php';
+
 return [
     'apiVersion' => 2,
     'pluginName' => 'simplecontact',
-    'pluginClass' => __DIR__ . '/plugin.php',
+    'pluginClass' => SimplecontactPlugin::class,
     'pluginPath' => __DIR__,
     'template' => null,
     'formConfig' => [
