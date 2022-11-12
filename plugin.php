@@ -5,7 +5,7 @@ use herbie\Environment;
 use herbie\PageResolverMiddleware;
 use herbie\Plugin;
 use herbie\TwigRenderer;
-use herbie\UrlGenerator;
+use herbie\UrlManager;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Tebe\HttpFactory\HttpFactory;
@@ -19,7 +19,7 @@ class SimplecontactPlugin extends Plugin
     private HttpFactory $httpFactory;
     private ServerRequestInterface $request;
     private TwigRenderer $twigRenderer;
-    private UrlGenerator $urlGenerator;
+    private UrlManager $urlManager;
 
     public function __construct(
         Config $config,
@@ -27,14 +27,14 @@ class SimplecontactPlugin extends Plugin
         HttpFactory $httpFactory,
         ServerRequestInterface $request,
         TwigRenderer $twigRenderer,
-        UrlGenerator $urlGenerator
+        UrlManager $urlManager
     ) {
         $this->config = $config;
         $this->environment = $environment;
         $this->httpFactory = $httpFactory;
         $this->request = $request;
         $this->twigRenderer = $twigRenderer;
-        $this->urlGenerator = $urlGenerator;
+        $this->urlManager = $urlManager;
     }
 
     public function twigFunctions(): array
@@ -173,7 +173,7 @@ class SimplecontactPlugin extends Plugin
     private function redirect($action)
     {
         $route = $this->environment->getRoute() . ':' . $action;
-        $url = $this->urlGenerator->generateAbsolute($route);
+        $url = $this->urlManager->createAbsoluteUrl($route);
         $response = $this->httpFactory->createResponse()->withHeader('Location', $url);
         $this->emitResponse($response);
         exit;
