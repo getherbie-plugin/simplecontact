@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 use herbie\Config;
-use herbie\Environment;
-use herbie\PageResolverMiddleware;
 use herbie\Plugin;
+use herbie\Translator;
 use herbie\TwigRenderer;
 use herbie\UrlManager;
 use Psr\Http\Message\ResponseInterface;
@@ -14,25 +15,25 @@ use Twig\TwigFunction;
 class SimplecontactPlugin extends Plugin
 {
     private Config $config;
-    private Environment $environment;
     private array $errors = [];
     private HttpFactory $httpFactory;
     private ServerRequestInterface $request;
+    private Translator $translator;
     private TwigRenderer $twigRenderer;
     private UrlManager $urlManager;
 
     public function __construct(
         Config $config,
-        Environment $environment,
         HttpFactory $httpFactory,
         ServerRequestInterface $request,
+        Translator $translator,
         TwigRenderer $twigRenderer,
         UrlManager $urlManager
     ) {
         $this->config = $config;
-        $this->environment = $environment;
         $this->httpFactory = $httpFactory;
         $this->request = $request;
+        $this->translator = $translator;
         $this->twigRenderer = $twigRenderer;
         $this->urlManager = $urlManager;
     }
@@ -44,73 +45,105 @@ class SimplecontactPlugin extends Plugin
         ];
     }
 
-    /**
-     * @return string
-     */
-    public function simplecontact()
+    public function simplecontact(): string
     {
-        if ($_SERVER['REQUEST_METHOD'] == "POST") {
-            if ($this->validateFormData()) {
-                if ($this->sendEmail()) {
-                    $this->redirect('success');
+        $status = $this->getQueryParam('status');
+        [$route] = $this->urlManager->parseRequest();
+
+        $formData = [];
+        $formErrors = [];
+        
+        if ($this->formSubmitted()) {
+            $formData = $this->filterFormData($this->getFormData());
+            $formErrors = $this->validateFormData($formData);
+            if (empty($formErrors)) {
+                $recipient = $this->config->getAsString('plugins.simplecontact.config.recipient'); // validate email
+                $status = $this->sendEmail($formData, $recipient);
+                if ($status) {
+                    $response = $this->createRedirectResponse($route, 'successful');
                 } else {
-                    $this->redirect('fail');
+                    $response = $this->createRedirectResponse($route, 'failed');
                 }
+                $this->emitResponse($response);
+                exit;
             }
         }
-
-        $config =  $this->getFormConfig();
-        $environment = $this->environment;
-        switch ($environment->getAction()) {
-            case 'fail':
-                $content = $config['messages']['fail'];
-                break;
-            case 'success':
-                $content = $config['messages']['success'];
-                break;
-            default:
-                $name = $this->config->get('plugins.simplesearch.template', function () {
-                    return $this->getComposerOrLocalTemplatesPath('form.twig');
-                });
-                $content = $this->twigRenderer->renderTemplate($name, [
-                    'config' => $config,
-                    'errors' => $this->errors,
-                    'vars' => $this->filterFormData(),
-                    'route' => $this->environment->getRoute()
-                ]);
+        
+        if($this->formReset()) {
+            $formData = [];
+            $formErrors = [];
         }
 
-        return $content;
+        $template = $this->config->get('plugins.simplecontact.config.template', function () {
+            return $this->getComposerOrLocalTemplatesPath('form.twig');
+        });
+
+        return $this->twigRenderer->renderTemplate($template, [
+            'data' => $formData,
+            'errors' => $formErrors,
+            'status' => $status,
+            'route' => $route
+        ]);
     }
 
-    /**
-     * @return bool
-     */
-    private function validateFormData()
+    private function getFormData(): array
     {
-        $config = $this->getFormConfig();
-        $form_data = $this->filterFormData();
-        extract($form_data); // name, email, message, antispam
+        return $this->request->getParsedBody();
+    }
+    
+    private function formSubmitted(): bool
+    {
+        if (!$this->isPostRequest()) {
+            return false;
+        }
+        $body = $this->request->getParsedBody();
+        return isset($body['button']) && ($body['button'] === 'submit');
+    }
+    
+    private function formReset(): bool
+    {
+        if (!$this->isPostRequest()) {
+            return false;
+        }
+        $body = $this->request->getParsedBody();
+        return isset($body['button']) && ($body['button'] === 'reset');
+    }
+    
+    private function isPostRequest(): bool
+    {
+        return $this->request->getMethod() === 'POST';
+    }
+    
+    private function getQueryParam(string $name, string $default = ''): string
+    {
+        $params = $this->request->getQueryParams();
+        return (string)($params[$name] ?? $default);
+    }
+    
+    private function validateFormData(array $data): array
+    {
+        extract($data); // name, email, message, antispam
 
+        $errors = [];
         if (empty($name)) {
-            $this->errors['name'] = $config['errors']['empty_field'];
+            $errors['name'] = $this->translator->t('simplecontact', 'errorEmptyField');
         }
         if (empty($email)) {
-            $this->errors['email'] = $config['errors']['empty_field'];
+            $errors['email'] = $this->translator->t('simplecontact', 'errorEmptyField');
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $this->errors['email'] = $config['errors']['invalid_email'];
+            $errors['email'] = $this->translator->t('simplecontact', 'errorInvalidEmail');
         }
         if (empty($message)) {
-            $this->errors['message'] = $config['errors']['empty_field'];
+            $errors['message'] = $this->translator->t('simplecontact', 'errorEmptyField');
         }
 
-        return empty($this->errors);
+        return $errors;
     }
 
     /**
      * @return array
      */
-    private function filterFormData()
+    private function filterFormData(array $input): array
     {
         $defaults = [
             'name' => '',
@@ -124,59 +157,35 @@ class SimplecontactPlugin extends Plugin
             'message' => FILTER_SANITIZE_STRING,
             'antispam' => FILTER_SANITIZE_STRING
         ];
-        $filtered = (array)filter_input_array(INPUT_POST, $definition);
+        $filtered = (array)filter_var_array($input, $definition);
         return array_merge($defaults, $filtered);
     }
 
     /**
      * @return bool
      */
-    private function sendEmail()
+    private function sendEmail(array $data, string $recipient): bool
     {
-        $form = $this->filterFormData();
-
         // Antispam
-        if (!empty($form['antispam'])) {
+        if (!empty($data['antispam'])) {
             return true;
         }
+        
+        $subject    = $this->translator->t('simplecontact', 'mailSubject');
 
-        $config = $this->getFormConfig();
+        $message = "{$data['message']}\n\n";
+        $message .= "Name: {$data['name']}\n";
+        $message .= "Email: {$data['email']}\n\n";
 
-        $recipient  = $config['recipient'];
-        $subject    = $config['subject'];
-
-        $message = "{$form['message']}\n\n";
-        $message .= "Name: {$form['name']}\n";
-        $message .= "Email: {$form['email']}\n\n";
-
-        $headers = "From: {$form['name']} <{$form['email']}>";
+        $headers = "From: {$data['name']} <{$data['email']}>";
 
         return mail($recipient, $subject, $message, $headers); // TODO replace with an smtp mailer
     }
 
-    /**
-     * @return array
-     */
-    private function getFormConfig()
+    private function createRedirectResponse(string $route, string $status): ResponseInterface
     {
-        $config = (array) $this->config->get('plugins.simplecontact.formConfig');
-        $page = $this->request->getAttribute(PageResolverMiddleware::HERBIE_REQUEST_ATTRIBUTE_PAGE);
-        if (isset($page->simplecontact) && is_array($page->simplecontact)) {
-            $config = (array)$page->simplecontact;
-        }
-        return $config;
-    }
-
-    /**
-     * @param string $action
-     */
-    private function redirect($action)
-    {
-        $route = $this->environment->getRoute() . ':' . $action;
-        $url = $this->urlManager->createAbsoluteUrl($route);
-        $response = $this->httpFactory->createResponse()->withHeader('Location', $url);
-        $this->emitResponse($response);
-        exit;
+        $url = $this->urlManager->createAbsoluteUrl($route) . '?status=' . $status;
+        return $this->httpFactory->createResponse()->withHeader('Location', $url);
     }
 
     /**
