@@ -7,6 +7,7 @@ use herbie\Plugin;
 use herbie\Translator;
 use herbie\TwigRenderer;
 use herbie\UrlManager;
+use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Tebe\HttpFactory\HttpFactory;
@@ -16,23 +17,23 @@ class SimplecontactPlugin extends Plugin
 {
     private Config $config;
     private array $errors = [];
-    private HttpFactory $httpFactory;
     private ServerRequestInterface $request;
+    private ResponseFactoryInterface $responseFactory;
     private Translator $translator;
     private TwigRenderer $twigRenderer;
     private UrlManager $urlManager;
 
     public function __construct(
         Config $config,
-        HttpFactory $httpFactory,
         ServerRequestInterface $request,
+        ResponseFactoryInterface $responseFactory,
         Translator $translator,
         TwigRenderer $twigRenderer,
         UrlManager $urlManager
     ) {
         $this->config = $config;
-        $this->httpFactory = $httpFactory;
         $this->request = $request;
+        $this->responseFactory = $responseFactory;
         $this->translator = $translator;
         $this->twigRenderer = $twigRenderer;
         $this->urlManager = $urlManager;
@@ -52,7 +53,7 @@ class SimplecontactPlugin extends Plugin
 
         $formData = [];
         $formErrors = [];
-        
+
         if ($this->formSubmitted()) {
             $formData = $this->filterFormData($this->getFormData());
             $formErrors = $this->validateFormData($formData);
@@ -68,7 +69,7 @@ class SimplecontactPlugin extends Plugin
                 exit;
             }
         }
-        
+
         if($this->formReset()) {
             $formData = [];
             $formErrors = [];
@@ -90,7 +91,7 @@ class SimplecontactPlugin extends Plugin
     {
         return $this->request->getParsedBody();
     }
-    
+
     private function formSubmitted(): bool
     {
         if (!$this->isPostRequest()) {
@@ -99,7 +100,7 @@ class SimplecontactPlugin extends Plugin
         $body = $this->request->getParsedBody();
         return isset($body['button']) && ($body['button'] === 'submit');
     }
-    
+
     private function formReset(): bool
     {
         if (!$this->isPostRequest()) {
@@ -108,18 +109,18 @@ class SimplecontactPlugin extends Plugin
         $body = $this->request->getParsedBody();
         return isset($body['button']) && ($body['button'] === 'reset');
     }
-    
+
     private function isPostRequest(): bool
     {
         return $this->request->getMethod() === 'POST';
     }
-    
+
     private function getQueryParam(string $name, string $default = ''): string
     {
         $params = $this->request->getQueryParams();
         return (string)($params[$name] ?? $default);
     }
-    
+
     private function validateFormData(array $data): array
     {
         extract($data); // name, email, message, antispam
@@ -170,7 +171,7 @@ class SimplecontactPlugin extends Plugin
         if (!empty($data['antispam'])) {
             return true;
         }
-        
+
         $subject    = $this->translator->t('simplecontact', 'mailSubject');
 
         $message = "{$data['message']}\n\n";
@@ -185,7 +186,7 @@ class SimplecontactPlugin extends Plugin
     private function createRedirectResponse(string $route, string $status): ResponseInterface
     {
         $url = $this->urlManager->createAbsoluteUrl($route) . '?status=' . $status;
-        return $this->httpFactory->createResponse()->withHeader('Location', $url);
+        return $this->responseFactory->createResponse()->withHeader('Location', $url);
     }
 
     /**
