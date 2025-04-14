@@ -10,7 +10,6 @@ use herbie\UrlManager;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Tebe\HttpFactory\HttpFactory;
 use Twig\TwigFunction;
 
 class SimplecontactPlugin extends Plugin
